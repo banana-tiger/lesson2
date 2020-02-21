@@ -33,13 +33,15 @@ PROXY = {
 
 
 def greet_user(bot, update):
-    text = 'Вызван /start'
+    text = f'Привет! С помощью этого бота вы можете посмотреть в каком созвездии сейчас находится та или иная планета солнечной системы.' \
+           f'Просто введите команду /planet вместе с одной из следующих планет: Mercury, Venus, Mars, Jupiter, Saturn, ' \
+           f'Uranus, Neptune, Pluto. Команду вводите одной строкой, например "/planet Mars"'
     print(text)
     update.message.reply_text(text)
 
 
 def talk_to_me(bot, update):
-    user_text = update.message.text 
+    user_text = "Введите команду /start"
     print(user_text)
     update.message.reply_text(user_text)
 
