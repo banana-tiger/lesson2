@@ -14,19 +14,19 @@
 """
 import logging
 import ephem
+import datetime
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 logging.basicConfig(format='%(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
                     filename='bot.log'
-)
-
+                    )
 
 PROXY = {
     'proxy_url': 'socks5h://t1.learn.python.ru:1080',
     'urllib3_proxy_kwargs': {
-        'username': 'learn', 
+        'username': 'learn',
         'password': 'python'
     }
 }
@@ -46,23 +46,41 @@ def talk_to_me(bot, update):
     update.message.reply_text(user_text)
 
 
-def receive_planet(bot, update):
-    test_dict = {"Mercury": ephem.Mercury('2020/01/01'), "Venus": ephem.Venus('2020/01/01'), "Mars": ephem.Mars('2020/01/01'),
-                 "Jupiter": ephem.Jupiter('2020/01/01'), "Saturn": ephem.Saturn('2020/01/01'), "Uranus": ephem.Uranus('2020/01/01'),
-                 "Neptune": ephem.Neptune('2020/01/01'), "Pluto": ephem.Pluto('2020/01/01')}
-    text = update.message.text
-    try:
-        user_planet = update.message.text.split()[1]
-        constellation = ephem.constellation(test_dict[user_planet])
-        update.message.reply_text(f"Планета {user_planet} находится в созвездии {constellation[1]}")
-    except KeyError:
-        update.message.reply_text(f"{user_planet} нет в списке, попробуйте ввести планету еще раз")
+def get_today():
+    today = datetime.date.today().strftime("%Y/%m/%d")
+    return today
 
- 
+
+def receive_planet(bot, update):
+    today_str = datetime.date.today().strftime("%Y/%m/%d")
+    planets_dict = {"Mercury": ephem.Mercury(), "Venus": ephem.Venus(),
+                    "Mars": ephem.Mars(),
+                    "Jupiter": ephem.Jupiter(), "Saturn": ephem.Saturn(),
+                    "Uranus": ephem.Uranus(),
+                    "Neptune": ephem.Neptune(), "Pluto": ephem.Pluto()}
+    #text = update.message.text
+    #try:
+
+    splitted_input = update.message.text.split()
+    if len(splitted_input) <2:
+       update.message.reply_text(f"Введите команду /planet и искомую планету одной строкой")
+
+    input_planet = update.message.text.split()[1]
+
+    if input_planet not in planets_dict:
+        update.message.reply_text(f"{input_planet} нет в списке, попробуйте ввести планету еще раз")
+        return
+    user_planet = planets_dict[input_planet]
+    user_planet.compute(today_str)
+    constellation = ephem.constellation(user_planet)
+    update.message.reply_text(f"Сегодня планета {input_planet} находится в созвездии {constellation[1]}")
+    #except KeyError:
+        #update.message.reply_text(f"{user_planet} нет в списке, попробуйте ввести планету еще раз")
+
 
 def main():
     mybot = Updater("1059535934:AAEogOPYQZ3fAA2u5VCoOWRMJdDCFe-PciU", request_kwargs=PROXY)
-    
+
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
     dp.add_handler(CommandHandler("planet", receive_planet))
@@ -70,7 +88,7 @@ def main():
 
     mybot.start_polling()
     mybot.idle()
-       
+
 
 if __name__ == "__main__":
     main()
