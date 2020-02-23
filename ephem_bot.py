@@ -77,6 +77,32 @@ def receive_planet(bot, update):
     #except KeyError:
         #update.message.reply_text(f"{user_planet} нет в списке, попробуйте ввести планету еще раз")
 
+def receive_full_moon_date(bot, update):
+    trash_list = [",", ".", "\\", "-"]
+    splitted_user_text = update.message.text.split()[1]
+    for word in splitted_user_text:
+        for symbol in word:
+            if symbol in trash_list:
+                splitted_user_text = splitted_user_text.replace(symbol, "/")
+            else:
+                break
+    splitted_date = splitted_user_text.split("/")
+
+    for index, number in enumerate(splitted_date):
+        if len(number) > 3:
+            year = splitted_date.pop(index)
+            if index == 0:
+                month = splitted_date.pop(index + 1)
+                day = splitted_date.pop()
+            elif index == 2:
+                month = splitted_date.pop(index - 1)
+                day = splitted_date.pop(index - 2)
+        else:
+            continue
+
+
+    correct_date_for_fullmoon = "/".join([year, month, day])
+    update.message.reply_text(f"Следующее полнолуние состоится {ephem.next_full_moon(correct_date_for_fullmoon)}")
 
 def main():
     mybot = Updater("1059535934:AAEogOPYQZ3fAA2u5VCoOWRMJdDCFe-PciU", request_kwargs=PROXY)
@@ -84,6 +110,7 @@ def main():
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
     dp.add_handler(CommandHandler("planet", receive_planet))
+    dp.add_handler(CommandHandler("next_full_moon", receive_full_moon_date))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
 
     mybot.start_polling()
